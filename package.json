@@ -1,0 +1,22 @@
+{
+  "name": "idk-yet",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "dev": "run-p dev:run dev:types",
+    "dev:run": "tsx watch --clear-screen=false src/index.ts",
+    "dev:types": "tsc --noEmit --watch --preserveWatchOutput",
+    "typecheck": "tsc --noEmit",
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "npm-run-all2": "^9.0.4",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
