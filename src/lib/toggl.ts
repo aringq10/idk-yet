@@ -5,9 +5,12 @@
 
 import { Buffer } from 'node:buffer';
 import { Project, TimeEntry } from './model.js';
+import { getDate } from './util.js';
 import * as z from 'zod';
 
 const WEEK = 7 * 24 * 60 * 60 * 1000;
+
+export type TimeEntriesParams = number | Date | [Date, Date];
 
 export class Toggl {
   token: string;
@@ -22,16 +25,29 @@ export class Toggl {
     return z.array(Project).parse(data);
   }
 
-  async fetchTimeEntries(): Promise<TimeEntry[]> {
-    let data = await this.fetch("me/time_entries", {
-      "since": `${Date.now() - WEEK}`
-    });
+  async fetchTimeEntries(params: TimeEntriesParams = Date.now() - WEEK): Promise<TimeEntry[]> {
+    let p: Record<string, string>;
+
+    if (typeof params === "number") {
+      params = Math.floor(params / 1000);
+      p = { "since": params.toString() };
+    } else if (params instanceof Date) {
+      p = { "before": getDate(params) }
+    } else {
+      const [startDate, endDate] = params;
+      p = {
+        "start_date": getDate(startDate),
+        "end_date": getDate(endDate)
+      }
+    }
+
+    let data = await this.fetch("me/time_entries", p);
 
     return z.array(TimeEntry).parse(data);
   }
 
   async fetch(endpoint: string, params: Record<string, string> = {}): Promise<any> {
-    const qs = new URLSearchParams(params);
+    const qs = new URLSearchParams(params).toString();
     const url = `https://api.track.toggl.com/api/v9/${endpoint}${qs ? `?${qs}` : ""}`;
     const auth = Buffer.from(this.token + ":api_token").toString('base64');
     let res = await fetch(url, {
