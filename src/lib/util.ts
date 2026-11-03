@@ -32,3 +32,13 @@ export async function getFilename(): Promise<string> {
 
   return fn;
 }
+
+export function getDate(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
+export function toDate(s: string): Date | null {
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return d;
+  else return null;
+}
