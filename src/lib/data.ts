@@ -19,36 +19,48 @@ export class Data {
     this.insertTimeEntries(timeEntries);
   }
 
-  insertProjects(projects: Project[]) {
+  insertProjects(projects: Project[]): boolean {
     const stmt = this.database.prepare(
-      `INSERT OR ROLLBACK INTO project(id, name)
+      `INSERT INTO project(id, name)
        VALUES (?, ?)`
     );
 
-    this.database.exec('BEGIN');
-    for (const p of projects) {
-      stmt.all(p.id, p.name);
+    try {
+      this.database.exec('BEGIN');
+      for (const p of projects) {
+        stmt.all(p.id, p.name);
+      }
+      this.database.exec('END');
+      return true;
+    } catch {
+      this.database.exec("ROLLBACK");
+      return false;
     }
-    this.database.exec('END');
   }
 
-  insertTimeEntries(timeEntries: TimeEntry[]) {
+  insertTimeEntries(timeEntries: TimeEntry[]): boolean {
     const stmt = this.database.prepare(
-      `INSERT OR ROLLBACK INTO time_entry(id, project_id, start, stop, description)
+      `INSERT INTO time_entry(id, project_id, start, stop, description)
        VALUES (?, ?, datetime(?), datetime(?), ?)`
     );
 
-    this.database.exec('BEGIN');
-    for (const t of timeEntries) {
-      stmt.all(
-        t.id,
-        t.project_id,
-        t.start.toISOString(),
-        t.stop?.toISOString() ?? null,
-        t.description
-      );
+    try {
+      this.database.exec('BEGIN');
+      for (const t of timeEntries) {
+        stmt.all(
+          t.id,
+          t.project_id,
+          t.start.toISOString(),
+          t.stop?.toISOString() ?? null,
+          t.description
+        );
+      }
+      this.database.exec('END');
+      return true;
+    } catch {
+      this.database.exec("ROLLBACK");
+      return false;
     }
-    this.database.exec('END');
   }
 
   getProjects(): Project[] {
