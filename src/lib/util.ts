@@ -38,7 +38,8 @@ export function getDate(d: Date): string {
 }
 
 export function toDate(s: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
   const d = new Date(s);
-  if (!isNaN(d.getTime())) return d;
-  else return null;
+  const valid = !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+  return valid ? d : null;
 }

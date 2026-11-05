@@ -22,7 +22,7 @@ type Action = [
   string, // command name
   string, // usage
   string, // description
-  (args: string[]) => void | Promise<void> // callback
+  (args: string[]) => void | Promise<void> // callback, args contain non-empty strings
 ]
 
 const actions: Action[]= [
@@ -84,10 +84,19 @@ const actions: Action[]= [
   ],
   [
     ".listT",
-    "",
+    "<from> <to>",
     "list time entries",
-    () => {
-      const t = data.getTimeEntries();
+    (args) => {
+      if (args.length !== 2) {
+        console.error("incorrect usage");
+        return;
+      }
+      const [from, to] = [toDate(args[0]!), toDate(args[1]!)]
+      if (from === null || to === null || from > to) {
+        console.error("invalid dates");
+        return;
+      }
+      const t = data.getTimeEntries(from, to);
       if (t.length === 0) console.log("No time entries");
       else console.table(t);
     }
@@ -113,7 +122,7 @@ const actions: Action[]= [
   ],
   [
     ".fetchT",
-    "<file> [<start> <end>]",
+    "<file> [<from> <to>]",
     "fetch time entries to json file",
     async (args) => {
       let params: TimeEntriesParams | undefined = undefined;
@@ -121,12 +130,12 @@ const actions: Action[]= [
         console.error("incorrect usage");
         return;
       } else if (args.length === 3) {
-        const [start, end] = [toDate(args[1]!), toDate(args[2]!)];
-        if (start === null || end === null || start > end) {
+        const [from, to] = [toDate(args[1]!), toDate(args[2]!)];
+        if (from === null || to === null || from > to) {
           console.error("invalid dates");
           return;
         }
-        params = [start, end];
+        params = [from, to];
       }
       const fn = args[0]!;
       const fh = await open(fn, 'w');
@@ -153,39 +162,42 @@ const actions: Action[]= [
 ];
 
 function help() {
-  const maxWidth = actions.map(v => {
-    return v[0].length + (!v[1] ? 0 : 1 + v[1].length);
-  }).reduce((p, c) => Math.max(p, c));
+  const maxWidth = actions.map(([cmd, usage, , ]) => cmd.length + (usage ? 1 + usage.length : 0))
+    .reduce((p, c) => Math.max(p, c));
 
   for (const a of actions) {
-    const [cmd, usage, desc, _] = a;
-    const leftSide = `${cmd}${!usage ? "" : " " + usage}`.padEnd(maxWidth);
+    const [cmd, usage, desc] = a;
+    const leftSide = `${cmd}${usage ? " " + usage : ""}`.padEnd(maxWidth);
     console.log(`${leftSide}  ${desc}`);
   }
 }
 
-console.log("type .help to see available commands");
-
-while (true) {
+async function start() {
+  console.log("type .help to see available commands");
   const rl = readline.createInterface({ input, output });
   try {
-    const [cmd, ...args] = (await rl.question("> ")).split(" ").filter(Boolean);
+    while (true) {
+      try {
+        const [cmd, ...args] = (await rl.question("> ")).split(" ").filter(Boolean);
 
-    if (cmd === undefined) {
-      console.error("unknown command");
-      continue;
-    }
-    const i = actions.map(v => v[0]).indexOf(cmd);
-    if (i === -1) {
-      console.error("unknown command");
-      continue;
-    }
+        let i;
+        if (
+          cmd === undefined
+          || (i = actions.map(([cmd]) => cmd).indexOf(cmd)) === -1
+        ) {
+          console.error("unknown command");
+          continue;
+        }
 
-    await actions[i]![3](args);
-  } catch (e) {
-    if (!(e instanceof Error)) e = new Error(String(e));
-    else console.error(`Error: ${e.message}`);
+        await actions[i]![3](args);
+      } catch (e) {
+        if (!(e instanceof Error)) e = new Error(String(e));
+        else console.error(`Error: ${e.message}`);
+      }
+    }
   } finally {
     rl.close();
   }
 }
+
+await start();

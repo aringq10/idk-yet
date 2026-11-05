@@ -1,6 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { Project, TimeEntry } from './model.js';
 import { Toggl } from './toggl.js';
+import { getDate } from './util.js';
 
 export class Data {
   database: DatabaseSync;
@@ -69,10 +70,12 @@ export class Data {
     ).all() as Project[];
   }
 
-  getTimeEntries(): TimeEntry[] {
+  getTimeEntries(from: Date, to: Date): TimeEntry[] {
     const l = this.database.prepare(
-      `SELECT * FROM time_entry;`
-    ).all();
+      `SELECT * FROM time_entry
+         WHERE date(start) >= ?
+               AND date(start) <= ?`
+    ).all(getDate(from), getDate(to));
 
     return l.map(t => {
       return {
