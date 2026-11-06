@@ -5,11 +5,14 @@ import express from "express";
 import { getDate, toDate, WEEK } from './lib/util.js';
 import path from 'node:path';
 
+const dir = import.meta.dirname;
+
 const token = process.env.API_TOKEN;
 if (!token) throw new Error("API_TOKEN is not set");
 
-const database = new DatabaseSync("main.db");
-database.exec(readFileSync("sql/schema.sql").toString());
+const database = new DatabaseSync(path.join(dir, "../main.db"));
+const schema = readFileSync(path.join(dir, "sql/schema.sql")).toString();
+database.exec(schema);
 
 const data = new Data(database);
 
@@ -17,12 +20,12 @@ const data = new Data(database);
 
 const app = express();
 
-app.locals.basedir = path.join(import.meta.dirname, "views");
+app.locals.basedir = path.join(dir, "views");
 
-app.set("views", "src/views");
+app.set("views", path.join(dir, "views"));
 app.set("view engine", "pug");
 
-app.use(express.static("public"));
+app.use(express.static(path.join(dir, "public")));
 
 app.get('/', (req, res) => {
   const s = req.query.startDate;
