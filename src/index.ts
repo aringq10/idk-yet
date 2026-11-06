@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { Data, toView, groupTimeEntries } from './lib/data.js';
 import express from "express";
-import { getDate, toDate, WEEK } from './lib/util.js';
+import { getDate, toDate, WEEK } from './lib/date.js';
 import path from 'node:path';
 
 const dir = import.meta.dirname;

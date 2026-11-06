@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { Project, TimeEntry } from './model.js';
 import { Toggl } from './toggl.js';
-import { getDate, formatDuration, formatTime } from './util.js';
+import { getDate, formatDuration, formatTime } from './date.js';
 
 export interface TimeEntryView {
   projectName: string,

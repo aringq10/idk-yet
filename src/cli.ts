@@ -8,7 +8,7 @@ import { Project, TimeEntry } from './lib/model.js';
 import * as z from 'zod';
 import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
-import { toDate } from './lib/util.js';
+import { toDate } from './lib/date.js';
 
 const dir = import.meta.dirname;
 
