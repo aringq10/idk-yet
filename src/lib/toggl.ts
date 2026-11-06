@@ -5,10 +5,8 @@
 
 import { Buffer } from 'node:buffer';
 import { Project, TimeEntry } from './model.js';
-import { getDate } from './util.js';
+import { getDate, WEEK } from './util.js';
 import * as z from 'zod';
-
-const WEEK = 7 * 24 * 60 * 60 * 1000;
 
 export type TimeEntriesParams = number | Date | [Date, Date];
 

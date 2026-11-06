@@ -1,6 +1,8 @@
 import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 
+export const WEEK = 7 * 24 * 60 * 60 * 1000;
+
 export async function select(options: string[]): Promise<number> {
   const rl = readline.createInterface({ input, output });
   let selection: number | null = null;
