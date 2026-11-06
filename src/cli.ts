@@ -96,7 +96,7 @@ const actions: Action[]= [
         console.error("invalid dates");
         return;
       }
-      const t = data.getTimeEntries(from, to);
+      const t = data.getTimeEntries({ from, to });
       if (t.length === 0) console.log("No time entries");
       else console.table(t);
     }
@@ -149,7 +149,7 @@ const actions: Action[]= [
   ],
   [
     ".fetchAll", "", "run updateDb",
-    async () => await data.updateDb(token)
+    async () => await data.update(token)
   ],
   [
     ".quit", "", "",
