@@ -1,0 +1,18 @@
+div(id="entries")
+  each d in days
+    div(class="entries-group")
+      div(class="entries-header")
+        div(class="entries-date") #{d.date}
+        div(class="entries-total") #{d.total}
+      div(class="entries-list")
+        each e in d.items
+          div(class="entries-item")
+            div(class="entries-item-header")
+              div(class="entries-item-project") #{e.projectName}
+              div(class="entries-item-time") #{e.start} - #{e.stop}
+              div(class="entries-item-duration") #{e.duration}
+            if e.description
+              hr
+              div(class="entries-item-desc") #{e.description}
+  else
+    div(id="entries-empty") No time entries

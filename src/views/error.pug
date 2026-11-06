@@ -1,0 +1,6 @@
+extends layouts/default
+
+block content
+  div(id="error")
+    div(id="error-code") #{code}
+    a(id="error-message" href="/") #{message}
