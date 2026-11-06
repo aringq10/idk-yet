@@ -1,0 +1,25 @@
+head
+  meta(charset="utf-8")
+  meta(name="viewport" content="width=device-width initial-scale=1")
+  link(rel="stylesheet" href="/styles.css")
+  link(rel="preconnect" href="https://fonts.googleapis.com")
+  link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
+  link(href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet")
+
+body
+  div(id="entries")
+    each d in days
+      div(class="entries-group")
+        div(class="entries-header")
+          div(class="entries-date") #{d.date}
+          div(class="entries-total") #{d.total}
+        div(class="entries-list")
+          each e in d.items
+            div(class="entries-item")
+              div(class="entries-item-header")
+                div(class="entries-item-project") #{e.projectName}
+                div(class="entries-item-time") #{e.start} - #{e.stop}
+                div(class="entries-item-duration") #{e.duration}
+              if e.description
+                hr
+                div(class="entries-item-desc") #{e.description}

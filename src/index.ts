@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import cron from 'node-cron';
-import { Data } from './lib/data.js';
+import { Data, toView, groupTimeEntries } from './lib/data.js';
+import express from "express";
 
 const token = process.env.API_TOKEN;
 if (!token) throw new Error("API_TOKEN is not set");
@@ -11,4 +11,20 @@ database.exec(readFileSync("sql/schema.sql").toString());
 
 const data = new Data(database);
 
-cron.schedule('*/30 * * * *', () => data.updateDb(token));
+/* express server */
+
+const app = express();
+
+app.set("views", "src/views");
+app.set("view engine", "pug");
+
+app.use(express.static("public"));
+
+app.get('/', (_, res) => {
+  res.render('index', {
+    days: groupTimeEntries(data.getTimeEntries()).
+      map(({ date, total, items }) => ({ date, total, items: items.map(toView) }))
+  });
+});
+
+app.listen(4321, "0.0.0.0", () => console.log("started on 4321"));
