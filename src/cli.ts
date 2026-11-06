@@ -8,7 +8,7 @@ import { Project, TimeEntry } from './lib/model.js';
 import * as z from 'zod';
 import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
-import { toDate } from './lib/date.js';
+import { parseDate } from './lib/date.js';
 
 const dir = import.meta.dirname;
 
@@ -93,7 +93,7 @@ const actions: Action[]= [
         console.error("incorrect usage");
         return;
       }
-      const [from, to] = [toDate(args[0]!), toDate(args[1]!)]
+      const [from, to] = [parseDate(args[0]!), parseDate(args[1]!)]
       if (from === null || to === null || from > to) {
         console.error("invalid dates");
         return;
@@ -132,7 +132,7 @@ const actions: Action[]= [
         console.error("incorrect usage");
         return;
       } else if (args.length === 3) {
-        const [from, to] = [toDate(args[1]!), toDate(args[2]!)];
+        const [from, to] = [parseDate(args[1]!), parseDate(args[2]!)];
         if (from === null || to === null || from > to) {
           console.error("invalid dates");
           return;

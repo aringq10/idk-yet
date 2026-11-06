@@ -5,7 +5,7 @@
 
 import { Buffer } from 'node:buffer';
 import { Project, TimeEntry } from './model.js';
-import { getDate, WEEK } from './util.js';
+import { formatDate, WEEK } from './date.js';
 import * as z from 'zod';
 
 export type TimeEntriesParams = number | Date | [Date, Date];
@@ -30,12 +30,12 @@ export class Toggl {
       params = Math.floor(params / 1000);
       p = { "since": params.toString() };
     } else if (params instanceof Date) {
-      p = { "before": getDate(params) }
+      p = { "before": formatDate(params) }
     } else {
       const [startDate, endDate] = params;
       p = {
-        "start_date": getDate(startDate),
-        "end_date": getDate(endDate)
+        "start_date": formatDate(startDate),
+        "end_date": formatDate(endDate)
       }
     }
 

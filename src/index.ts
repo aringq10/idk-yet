@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { Data, toView, groupTimeEntries } from './lib/data.js';
 import express from "express";
-import { getDate, toDate, WEEK } from './lib/date.js';
+import { formatDate, parseDate, WEEK } from './lib/date.js';
 import path from 'node:path';
 
 const dir = import.meta.dirname;
@@ -31,10 +31,10 @@ app.get('/', (req, res) => {
   const s = req.query.startDate;
   const e = req.query.endDate;
   const startDate = typeof s === "string"
-    ? toDate(s)
+    ? parseDate(s)
     : null;
   const endDate = typeof e === "string"
-    ? toDate(e)
+    ? parseDate(e)
     : null;
   const bothUndefined = s === undefined && e === undefined;
   const badRequest =
@@ -51,8 +51,8 @@ app.get('/', (req, res) => {
     res.render('index', {
       days: groupTimeEntries(data.getTimeEntries(filter)).
         map(({ date, total, items }) => ({ date, total, items: items.map(toView) })),
-      startDate: getDate(filter.from),
-      endDate: getDate(filter.to)
+      startDate: formatDate(filter.from),
+      endDate: formatDate(filter.to)
     });
   }
 });

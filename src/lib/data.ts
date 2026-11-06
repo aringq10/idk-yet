@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { Project, TimeEntry } from './model.js';
 import { Toggl } from './toggl.js';
-import { getDate, formatDuration, formatTime } from './date.js';
+import { formatDate, formatDuration, formatTime } from './date.js';
 
 export interface TimeEntryView {
   projectName: string,
@@ -31,7 +31,7 @@ export function groupTimeEntries(
 ): { date: string, total: string, items: TimeEntryExt[] }[] {
   const groups = new Map<string, TimeEntryExt[]>();
   for (const item of items) {
-    const key = getDate(item.start);
+    const key = formatDate(item.start);
     const bucket = groups.get(key);
     if (bucket) bucket.push(item);
     else groups.set(key, [item]);
@@ -126,7 +126,7 @@ export class Data {
          LEFT JOIN project ON project_id=project.id
            WHERE date(start) >= ?
                  AND date(start) <= ?`
-      ).all(getDate(range.from), getDate(range.to));
+      ).all(formatDate(range.from), formatDate(range.to));
 
     return l.map(t => {
       const startDate = new Date(t.start as string);
