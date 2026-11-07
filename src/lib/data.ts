@@ -1,51 +1,11 @@
 import { DatabaseSync } from 'node:sqlite';
 import { Project, TimeEntry } from './model.js';
 import { Toggl } from './toggl.js';
-import { formatDate, formatDuration, formatTime } from './date.js';
+import { formatDate } from './date.js';
 
-export interface TimeEntryView {
-  projectName: string,
-  start: string,
-  stop: string,
-  duration: string,
-  description: string
-}
-
-export interface TimeEntryExt extends TimeEntry {
-  projectName: string,
+export type TimeEntryExt = Omit<TimeEntry, "id" | "project_id"> & {
+  projectName: string | null,
   duration: number | null
-}
-
-export function toView(t: TimeEntryExt): TimeEntryView {
-  return {
-    projectName: t.projectName ?? "NaN",
-    start: formatTime(t.start),
-    stop: t.stop ? formatTime(t.stop) : "Nan",
-    duration: t.duration ? formatDuration(t.duration) : "NaN",
-    description: t.description ?? ""
-  };
-}
-
-export function groupTimeEntries(
-  items: TimeEntryExt[]
-): { date: string, total: string, items: TimeEntryExt[] }[] {
-  const groups = new Map<string, TimeEntryExt[]>();
-  for (const item of items) {
-    const key = formatDate(item.start);
-    const bucket = groups.get(key);
-    if (bucket) bucket.push(item);
-    else groups.set(key, [item]);
-  }
-
-  return [...groups.entries()]
-    .sort(([a], [b]) => b.localeCompare(a))
-    .map(([date, bucket]) => ({
-      date,
-      total: formatDuration(bucket.reduce((p, c) => {
-        return p + (c.duration ?? 0)
-      }, 0)),
-      items: bucket
-    }));
 }
 
 export class Data {
@@ -116,16 +76,19 @@ export class Data {
   }
 
   getTimeEntries(range?: { from: Date, to: Date }): TimeEntryExt[] {
+    const baseQuery = `
+      SELECT
+        *,
+        unixepoch(stop) - unixepoch(start) AS duration
+      FROM time_entry
+      LEFT JOIN project
+        ON project_id=project.id
+    `;
     const l = range === undefined ?
+      this.database.prepare(baseQuery).all() :
       this.database.prepare(
-        `SELECT * FROM time_entry
-         LEFT JOIN project ON project_id=project.id`
-      ).all() :
-      this.database.prepare(
-        `SELECT * FROM time_entry
-         LEFT JOIN project ON project_id=project.id
-           WHERE date(start) >= ?
-                 AND date(start) <= ?`
+        `${baseQuery} WHERE
+           date(start) >= ? AND date(start) <= ?`
       ).all(formatDate(range.from), formatDate(range.to));
 
     return l.map(t => {
@@ -133,16 +96,11 @@ export class Data {
       const stopDate = t.stop
         ? new Date(t.stop as string)
         : null;
-      const duration = stopDate
-        ? stopDate.getTime() - startDate.getTime()
-        : null;
       return {
-        id: t.id as number,
-        project_id: t.project_id as number | null,
-        projectName: t.name as string,
+        projectName: t.name as string | null,
         start: startDate,
         stop: stopDate,
-        duration: duration,
+        duration: t.duration as number | null,
         description: t.description as string | null
       };
     })

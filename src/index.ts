@@ -1,9 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { Data, toView, groupTimeEntries } from './lib/data.js';
+import { Data  } from './lib/data.js';
 import express from "express";
 import { formatDate, parseDate, WEEK } from './lib/date.js';
 import path from 'node:path';
+import { groupTimeEntries, toView } from './lib/view.js';
+
+const PORT = 4321;
 
 const dir = import.meta.dirname;
 
@@ -57,4 +60,4 @@ app.get('/', (req, res) => {
   }
 });
 
-app.listen(4321, "0.0.0.0", () => console.log("started on 4321"));
+app.listen(PORT, "0.0.0.0", () => console.log(`listening on http://localhost:${PORT}`));
